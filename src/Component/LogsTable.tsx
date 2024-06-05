@@ -5,9 +5,6 @@ interface LogEntry {
   id: string;
   user_id: string;
   action: string;
-  action1?: string;
-  action2?: string;
-  action3?: string;
   category: string;
   cat_id: string;
   date: string;
@@ -42,21 +39,8 @@ const LogsTable: React.FC = () => {
       header: true,
       skipEmptyLines: true,
       complete: (result: Papa.ParseResult<LogEntry>) => {
-        const processedData = result.data.map((log: LogEntry) => {
-          const [action1, action2] = log.action
-            ? log.action.split(/,(.+)/)
-            : ["", "", "", ""];
-          const action3 = action2 ? action2.trim().split(" ")[0] : "";
-
-          return {
-            ...log,
-            action1: action1 ? action1.trim() : "",
-            action2: action2 ? action2.trim() : "",
-            action3: action3,
-          };
-        });
-        setLogs(processedData);
-        setFilteredLogs(processedData);
+        setLogs(result.data);
+        setFilteredLogs(result.data);
       },
     });
   };
@@ -71,9 +55,7 @@ const LogsTable: React.FC = () => {
         (log) =>
           log.id.includes(searchTerm) ||
           log.user_id.includes(searchTerm) ||
-          log.action1?.includes(searchTerm) ||
-          log.action2?.includes(searchTerm) ||
-          log.action3?.includes(searchTerm) ||
+          log.action.includes(searchTerm) ||
           log.category.includes(searchTerm) ||
           log.cat_id.includes(searchTerm) ||
           log.date.includes(searchTerm)
@@ -128,6 +110,14 @@ const LogsTable: React.FC = () => {
     );
   };
 
+  const extractActionDetails = (action: string) => {
+    const regex = /^([^,]+),\s*([^,]+),?\s*(.*)/;
+    const match = action.match(regex);
+    return match
+      ? { actionType: match[2].split(" ")[0], details: match[2] + " " + (match[3] || "") }
+      : { actionType: "", details: "" };
+  };
+
   return (
     <div>
       <div className="search-container">
@@ -159,25 +149,29 @@ const LogsTable: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {currentEntries.map((log) => (
-            <tr key={log.id}>
-              <td>{highlightSearchTerm(log.id)}</td>
-              <td>{highlightSearchTerm(log.user_id)}</td>
-              <td className="modified-by d-flex align-items-center ">
-                <img
-                  src={userImages[log.user_id] || "/images/default.jpeg"}
-                  alt={`Instructor ${log.user_id}`}
-                  className="instructor-image"
-                />
-                {highlightSearchTerm(log.action1 || "")}
-              </td>
-              <td>{highlightSearchTerm(log.action3 || "")}</td>
-              <td>{highlightSearchTerm(log.action2 || "")}</td>
-              <td>{highlightSearchTerm(log.category)}</td>
-              <td>{highlightSearchTerm(log.cat_id)}</td>
-              <td>{highlightSearchTerm(log.date)}</td>
-            </tr>
-          ))}
+          {currentEntries.map((log) => {
+            const {  actionType, details } = extractActionDetails(log.action);
+            const modifiedBy = log.action.split(",")[0]; 
+            return (
+              <tr key={log.id}>
+                <td>{highlightSearchTerm(log.id)}</td>
+                <td>{highlightSearchTerm(log.user_id)}</td>
+                <td className="modified-by d-flex align-items-center">
+                  <img
+                    src={userImages[log.user_id] || "/images/default.jpeg"}
+                    alt={`Instructor ${log.user_id}`}
+                    className="instructor-image"
+                  />
+                  {highlightSearchTerm(modifiedBy)}
+                </td>
+                <td>{highlightSearchTerm(actionType)}</td>
+                <td>{highlightSearchTerm(details)}</td>
+                <td>{highlightSearchTerm(log.category)}</td>
+                <td>{highlightSearchTerm(log.cat_id)}</td>
+                <td>{highlightSearchTerm(log.date)}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       <div className="pagination">
@@ -216,3 +210,4 @@ const LogsTable: React.FC = () => {
 };
 
 export default LogsTable;
+
