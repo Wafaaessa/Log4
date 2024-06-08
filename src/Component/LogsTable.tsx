@@ -27,6 +27,9 @@ const LogsTable: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>([]);
+  const [invitationFilter, setInvitationFilter] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [currentSet, setCurrentSet] = useState(0);
   const entriesPerPage = 20;
@@ -50,8 +53,22 @@ const LogsTable: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // if (searchTerm) {
+    //   const filtered = logs.filter(
+    //     (log) =>
+    //       log.id.includes(searchTerm) ||
+    //       log.user_id.includes(searchTerm) ||
+    //       log.action.includes(searchTerm) ||
+    //       log.category.includes(searchTerm) ||
+    //       log.cat_id.includes(searchTerm) ||
+    //       log.date.includes(searchTerm)
+    //   );
+    // }
+
+    let filtered=logs;
     if (searchTerm) {
-      const filtered = logs.filter(
+
+       filtered = filtered.filter(
         (log) =>
           log.id.includes(searchTerm) ||
           log.user_id.includes(searchTerm) ||
@@ -60,12 +77,25 @@ const LogsTable: React.FC = () => {
           log.cat_id.includes(searchTerm) ||
           log.date.includes(searchTerm)
       );
+    }
+    if (startDate){
+      filtered=filtered.filter((log)=>new Date(log.date)>=new Date(startDate))
+    }
+    if (endDate) {
+      filtered = filtered.filter((log) => new Date(log.date) <= new Date(endDate));
+    }
+if(invitationFilter){
+  filtered = filtered.filter((log) => log.action.toLowerCase().includes("invitation"));
+
+}
+    
       setFilteredLogs(filtered);
       setCurrentPage(1);
-    } else {
-      setFilteredLogs(logs);
-    }
-  }, [searchTerm, logs]);
+    // }
+    //  else {
+    //   setFilteredLogs(logs);
+    // }
+  }, [searchTerm, startDate, endDate, invitationFilter, logs]);
 
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
@@ -95,6 +125,15 @@ const LogsTable: React.FC = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStartDate(e.target.value);
+  };
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEndDate(e.target.value);
+  };
+  const handleInvitationFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInvitationFilter(e.target.checked);
+  };
 
   const highlightSearchTerm = (text: string) => {
     if (!searchTerm) return text;
@@ -120,6 +159,8 @@ const LogsTable: React.FC = () => {
 
   return (
     <div>
+      <div className="filters-container">
+     
       <div className="search-container">
         <input
           type="text"
@@ -130,6 +171,43 @@ const LogsTable: React.FC = () => {
         />
         <i className="fa fa-search search-icon"></i>
       </div>
+      <div className="center">
+
+      <div className="date-filter-container">
+        <label htmlFor="start " className="p-3">StartDate:</label>
+        <input
+        type="date"
+        value={startDate}
+        onChange={handleStartDateChange}
+        className="date-input"
+        placeholder="Start Date"
+        
+        />
+        <label htmlFor="end"className="p-3">EndDate:</label>
+
+          <input
+            type="date"
+            value={endDate}
+            onChange={handleEndDateChange}
+            className="date-input"
+            placeholder="End Date"
+          />
+      </div>
+
+      <div className="invitation-filter-container">
+          <label>
+            <input
+              type="checkbox"
+              checked={invitationFilter}
+              onChange={handleInvitationFilterChange}
+            />
+            Invitation Only
+          </label>
+        </div>
+        </div>
+        
+        </div>
+
       <table className="u">
         <thead className="thead-dark">
           <tr>

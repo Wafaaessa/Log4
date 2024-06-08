@@ -44,6 +44,37 @@ input:focus {
 
 }
 
+.date-filter-container {
+  display: flex;
+  align-items: center;
+}
+
+.date-input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+/* Style for the invitation filter */
+.invitation-filter-container {
+  display: flex;
+  align-items: center;
+}
+.center{
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.invitation-filter-container label {
+  display: flex;
+  align-items: center;
+}
+
+.invitation-filter-container input {
+  margin-right: 5px;
+}
 
 /* Table styling */
 .u {
